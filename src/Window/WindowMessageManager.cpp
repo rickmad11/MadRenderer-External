@@ -113,7 +113,7 @@ LRESULT WindowMessageManager::WindowProcWR(HWND hWnd, UINT Msg, WPARAM wParam, L
 				UINT height = HIWORD(lParam);
 
 				reinterpret_cast<WindowManager*>(this)->SetWindowSize(width, height);
-				DX11::OnWindowResize(width, height);
+				MadRenderer::DX11::OnWindowResize(width, height);
 				break;
 			}
 
