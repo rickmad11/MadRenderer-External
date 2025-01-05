@@ -33,7 +33,7 @@ void DX11::OnWindowResize(UINT width, UINT height) noexcept
 
 		if (FAILED(p_dx11->pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0)))
 		{
-			OutputDebugStringW(L"\n\n\nError on ResizeBuffers\n\n\n");
+			MessageBoxW(nullptr, L"Error on ResizeBuffers \nvoid DX11::OnWindowResize(UINT width, UINT height) noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 			p_dx11->isBeingResized = false;
 			return;
 		}
@@ -87,7 +87,7 @@ void DX11::WindowFullscreen(bool isFullscreen) noexcept
 
 		if (FAILED(p_dx11->pSwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0)))
 		{
-			OutputDebugStringW(L"\n\n\nError on ResizeBuffers\n\n\n");
+			MessageBoxW(nullptr, L"Error ResizeBuffers \nvoid DX11::WindowFullscreen(bool isFullscreen) noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 			p_dx11->isBeingResized = false;
 			return;
 		}
@@ -149,49 +149,49 @@ bool DX11::Initialize()
 
 	if (!VerifyCpuSupport())
 	{
-		OutputDebugStringW(L"\n\n\nError Verifying Cpu Support\n\n\n");
+		MessageBoxW(nullptr, L"Error VerifyCpuSupport \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if (!VerifyAndSetRefreshRate(DXGI_FORMAT_R8G8B8A8_UNORM))
 	{
-		OutputDebugStringW(L"\n\n\nError Getting Refresh Rate\n\n\n");
+		MessageBoxW(nullptr, L"Error VerifyAndSetRefreshRate \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializeDevices())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing Devices\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializeDevices \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializeBackBuffer())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing BackBuffer\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializeBackBuffer \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializeRasterizerState())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing RasterizerState\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializeRasterizerState \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializePixelShader())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing PixelShader\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializePixelShader \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializeVertexShader())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing VertexShader\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializeVertexShader \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(!InitializeVertexBuffer())
 	{
-		OutputDebugStringW(L"\n\n\nError Initializing VertexBuffer\n\n\n");
+		MessageBoxW(nullptr, L"Error InitializeVertexBuffer \nbool DX11::Initialize()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -289,11 +289,19 @@ void DX11::SetNewWindowSize(int window_width, int window_height)
 
 void DX11::SetVSync(unsigned int sync) noexcept
 {
-	v_sync = std::clamp(sync, 1u, 3u);
+	v_sync = std::clamp(sync, 0u, 4u);
+
+	RefreshRate = { .Numerator = sync * 60, .Denominator = 1 };
+
+	CreateNewSwapChain();
 }
 
 void DX11::DisableVSync() noexcept
 {
+	RefreshRate = { .Numerator = 0, .Denominator = 1 };
+
+	CreateNewSwapChain();
+
 	v_sync = 0;
 }
 
@@ -309,6 +317,11 @@ void DX11::ChangeFont(std::uint8_t* const pData, std::size_t size) noexcept
 	spriteFont = std::make_unique<DirectX::SpriteFont>(pDevice.Get(), pData, size, false);
 
 	isBeingResized = false;
+}
+
+void DX11::ApplyAASettings(DXGI_SAMPLE_DESC sample_desc)
+{
+	CreateNewSwapChain(sample_desc);
 }
 
 void DX11::AddVertices(RenderList* const pRenderList, std::span<Vertex> vertices, D3D11_PRIMITIVE_TOPOLOGY topology) const 
@@ -370,13 +383,13 @@ bool DX11::InitializeDevices()
 
 	if(f_hresult == DXGI_ERROR_NOT_CURRENTLY_AVAILABLE)
 	{
-		OutputDebugStringW(L"\n\n\nCannot Initialize DXGI on a Session 0 process\n\n\n");
+		MessageBoxW(nullptr, L"DXGI_ERROR_NOT_CURRENTLY_AVAILABLE \nbool DX11::InitializeDevices()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
 	if(f_hresult != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCall to D3D11CreateDeviceAndSwapChain failed\n\n\n");
+		MessageBoxW(nullptr, L"Error D3D11CreateDeviceAndSwapChain \nbool DX11::InitializeDevices()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -391,7 +404,7 @@ bool DX11::InitializeBackBuffer()
 
 	if(buffer_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot Get Back Buffer from the Swap Chain\n\n\n");
+		MessageBoxW(nullptr, L"Error GetBuffer \nbool DX11::InitializeBackBuffer()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -399,7 +412,7 @@ bool DX11::InitializeBackBuffer()
 
 	if (render_view_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateRenderTargetView\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateRenderTargetView \nbool DX11::InitializeBackBuffer()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -424,7 +437,7 @@ bool DX11::InitializeRasterizerState()
 
 	if(rasterizer_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateRasterizerState\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateRasterizerState \nbool DX11::InitializeRasterizerState()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -457,7 +470,7 @@ bool DX11::InitializePixelShader()
 
 	if(compile_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot Compile Pixel Shader\n\n\n");
+		MessageBoxW(nullptr, L"Error D3DCompile \nbool DX11::InitializePixelShader()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -465,7 +478,7 @@ bool DX11::InitializePixelShader()
 
 	if (result_pixel_shader != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreatePixelShader\n\n\n");
+		MessageBoxW(nullptr, L"Error CreatePixelShader \nbool DX11::InitializePixelShader()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -512,7 +525,7 @@ bool DX11::InitializeVertexShader()
 
 	if (compile_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot Compile Pixel Shader\n\n\n");
+		MessageBoxW(nullptr, L"Error D3DCompile \nbool DX11::InitializeVertexShader()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -520,7 +533,7 @@ bool DX11::InitializeVertexShader()
 
 	if (result_vertex_shader != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateVertexShader\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateVertexShader \nbool DX11::InitializeVertexShader()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -541,7 +554,7 @@ bool DX11::InitializeVertexBuffer()
 
 	if (constant_buffer_status != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateBuffer\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateBuffer \nbool DX11::InitializeVertexBuffer()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -584,7 +597,7 @@ void DX11::SetConstantBuffer()
 
 	if (constant_buffer_status != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateBuffer\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateBuffer \nvoid DX11::SetConstantBuffer()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return;
 	}
 
@@ -604,7 +617,7 @@ void DX11::SetInputLayout()
 
 	if(input_layout_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateInputLayout\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateInputLayout \nvoid DX11::SetInputLayout()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return;
 	}
 
@@ -630,7 +643,7 @@ void DX11::SetBlendState()
 
 	if(blend_result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nCannot CreateBlendState\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateBlendState \nvoid DX11::SetBlendState()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return;
 	}
 
@@ -657,7 +670,7 @@ bool DX11::VerifyAndSetRefreshRate(DXGI_FORMAT format)
 
 	if (CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(pIDXGIFactory.GetAddressOf())) != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nError Creating DXGIFactory\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateDXGIFactory \nbool DX11::VerifyAndSetRefreshRate(DXGI_FORMAT format)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -735,6 +748,82 @@ bool DX11::VerifyAndSetRefreshRate(DXGI_FORMAT format)
 	}
 
 	return false;
+}
+
+void DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)
+{
+	BOOL bFullscreenState = false;
+
+	pSwapChain->GetFullscreenState(&bFullscreenState, nullptr);
+
+	Microsoft::WRL::ComPtr<IDXGIDevice> pGIDevice;
+	HRESULT query_result = pDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(pGIDevice.GetAddressOf()));
+
+	if (query_result != S_OK)
+	{
+		MessageBoxW(nullptr, L"Error on QueryInterface \nvoid DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+		return;
+	}
+
+	Microsoft::WRL::ComPtr<IDXGIAdapter> pGIAdapter;
+	HRESULT parent_adapter_result = pGIDevice->GetParent(__uuidof(IDXGIAdapter), reinterpret_cast<void**>(pGIAdapter.GetAddressOf()));
+
+	if (parent_adapter_result != S_OK)
+	{
+		MessageBoxW(nullptr, L"Error on GetParent \nvoid DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+		return;
+	}
+
+	Microsoft::WRL::ComPtr<IDXGIFactory> pGIFactory;
+	HRESULT parent_factory_result = pGIAdapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(pGIFactory.GetAddressOf()));
+
+	if (parent_factory_result != S_OK)
+	{
+		MessageBoxW(nullptr, L"Error on GetParent \nvoid DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+		return;
+	}
+
+	DXGI_MODE_DESC mode_desc{};
+	mode_desc.Width = windowWidth;
+	mode_desc.Height = windowHeight;
+	mode_desc.RefreshRate = RefreshRate;
+	mode_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	mode_desc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	mode_desc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc{};
+	swap_chain_desc.BufferDesc = mode_desc;
+	swap_chain_desc.SampleDesc = sample_desc;
+	swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swap_chain_desc.BufferCount = 1;
+	swap_chain_desc.OutputWindow = windowHandle;
+	swap_chain_desc.Windowed = !bFullscreenState;
+	swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swap_chain_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+
+	pSwapChain.Reset();
+	pRenderTargetView.Reset();
+
+	HRESULT swapchain_result = pGIFactory->CreateSwapChain(pDevice.Get(), &swap_chain_desc, pSwapChain.GetAddressOf());
+
+	if (swapchain_result != S_OK)
+	{
+		MessageBoxW(nullptr, L"Error on CreateSwapChain \nvoid DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+		return;
+	}
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> p_texture_2d = nullptr;
+	pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(p_texture_2d.GetAddressOf()));
+
+	HRESULT render_view_result = pDevice->CreateRenderTargetView(p_texture_2d.Get(), nullptr, pRenderTargetView.GetAddressOf());
+
+	if (render_view_result != S_OK)
+	{
+		MessageBoxW(nullptr, L"Error on CreateRenderTargetView \nvoid DX11::CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+		return;
+	}
+
+	pDeviceContext->OMSetRenderTargets(1, pRenderTargetView.GetAddressOf(), nullptr);
 }
 
 void DX11::SetBackBufferRenderTarget() const noexcept
@@ -963,7 +1052,7 @@ void TextureManager::OnResize() noexcept
 					texture_data.pTextureResource.GetAddressOf(), texture_data.pTextureResourceView.GetAddressOf());
 
 				if (result != S_OK)
-					OutputDebugStringW(L"\n\n\nError on CreateWICTextureFromFile\n\n\n");
+					MessageBoxW(nullptr, L"Error CreateWICTextureFromMemory \nvoid TextureManager::OnResize() noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 
 				texture_data.buffer_size = curr.second;
 				textures[curr.first] = texture_data;
@@ -984,7 +1073,7 @@ void TextureManager::OnResize() noexcept
 					texture_data.pTextureResource.GetAddressOf(), texture_data.pTextureResourceView.GetAddressOf());
 
 				if (result != S_OK)
-					OutputDebugStringW(L"\n\n\nError on CreateWICTextureFromFile\n\n\n");
+					MessageBoxW(nullptr, L"Error CreateWICTextureFromFile \nvoid TextureManager::OnResize() noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 
 				textures[curr.first] = texture_data;
 
@@ -1009,7 +1098,7 @@ int TextureManager::AddTexture(const wchar_t* file) noexcept
 
 	if (result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nError on CreateWICTextureFromFile\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateWICTextureFromFile \nint TextureManager::AddTexture(const wchar_t* file) noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return -1;
 	}
 
@@ -1042,7 +1131,7 @@ int TextureManager::AddTexture(const uint8_t* buffer, std::size_t size) noexcept
 
 	if (result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nError on CreateWICTextureFromFile\n\n\n");
+		MessageBoxW(nullptr, L"Error CreateWICTextureFromMemory \nint TextureManager::AddTexture(const uint8_t* buffer, std::size_t size) noexcept", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return -1;
 	}
 
@@ -1083,7 +1172,7 @@ bool AudioManager::InitializeAudioManager()
 
 	if (result != S_OK)
 	{
-		OutputDebugStringW(L"\n\n\nError CoInitializeEx Audio Manager\n\n\n");
+		MessageBoxW(nullptr, L"Error CoInitializeEx \nbool AudioManager::InitializeAudioManager()", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return false;
 	}
 
@@ -1096,13 +1185,13 @@ int AudioManager::AddSoundEffect(const wchar_t* wavFile)
 {
 	if(wavFile == nullptr)
 	{
-		OutputDebugStringW(L"\n\n\nSpecified File was nullptr\n\n\n");
+		//MessageBoxW(nullptr, L"Error wavFile was nullptr \nint AudioManager::AddSoundEffect(const wchar_t* wavFile)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return -1;
 	}
 
 	if (internal_audio_id + 1 > MaxAudioCount)
 	{
-		OutputDebugStringW(L"\n\n\nError Maximum Audio Limit Reached!\n\n\n");
+		//MessageBoxW(nullptr, L"Error max audio files reached \nint AudioManager::AddSoundEffect(const wchar_t* wavFile)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return -1;
 	}
 
@@ -1120,7 +1209,7 @@ void AudioManager::PlaySoundEffect(int soundID, float volume, float pitch, float
 {
 	if(soundID == -1)
 	{
-		OutputDebugStringW(L"\n\n\nFile was not added due to Maximum Audio Limit Reached!\n\n\n");
+		MessageBoxW(nullptr, L"Error invalid sound ID \nvoid AudioManager::PlaySoundEffect(int soundID, float volume, float pitch, float pan)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
 		return;
 	}
 

@@ -221,6 +221,10 @@ public:
 	void DisableVSync() noexcept;
 	void ChangeFont(std::uint8_t* const pData, std::size_t size) noexcept;
 
+	//Please make sure not to pass invalid settings since this will crash you, im not verifying any of your settings
+	//I currently did not add any checks whenever or not your hardware supports certain settings.
+	void ApplyAASettings(DXGI_SAMPLE_DESC sample_desc); 
+
 private:
 	void AddVertices(RenderList* const pRenderList, std::span<Vertex> vertices, D3D11_PRIMITIVE_TOPOLOGY topology) const;
 
@@ -236,6 +240,7 @@ private:
 private:
 	bool VerifyCpuSupport() const noexcept;
 	bool VerifyAndSetRefreshRate(DXGI_FORMAT format);
+	void CreateNewSwapChain(DXGI_SAMPLE_DESC sample_desc = {.Count = 4, .Quality = 0});
 
 private:
 	void SetBackBufferRenderTarget() const noexcept;
