@@ -15,10 +15,11 @@ This is a basic rendering library using DirectX 11. It was written to help in ch
 ## How to use
 
 1. Copy the compiled library file along with the DX11.h header into your project directory.
-2. Add DirectXTK to your project by simply following this guide: https://github.com/microsoft/DirectXTK/wiki/DirectXTK#adding-to-a-vs-solution
+2. Please note that when using my project, you will still need to include the other headers that my DX11.h depends on. You can simply copy the necessary includes from my pch.h file. I know this is quite annoying, but to be honest, Im lazy and likely the only one using this library at the moment xD. As soon as I have the motivation, I will improve the library so it can be included into any project without any of the additional includes that the user has to do and without the DirectXTK bullshit. (Should only take some minor changes)
+4. Add DirectXTK to your project by simply following this guide: https://github.com/microsoft/DirectXTK/wiki/DirectXTK#adding-to-a-vs-solution
 I recommend using project-to-project references and selecting DirectXTK_Desktop_2022_Win10.
 
-3. Link the library to your project as you would with any other.
+5. Link the library to your project as you would with any other.
 
 If you're using my custom window manager, ensure you initialize the renderer as shown below:
 ![image](https://github.com/user-attachments/assets/f95a2114-e14f-46bd-85b2-5f60fd903560)
