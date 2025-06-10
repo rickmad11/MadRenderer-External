@@ -34,16 +34,20 @@ namespace MadRenderer
 		void DrawDot(Vector2 pos, Color const& color) noexcept;
 		void DrawFilledRect(Vector4 const& rect, Color const& color) noexcept;
 		void DrawRect(Vector4 const& rect, float strokeWidth, Color const& color) noexcept;
+		void DrawRect(Vector4 const& rect, Color const& InsideColor, Color const& OutlineColor) noexcept;
+		void DrawRect(Vector4 const& rect, float strokeWidth, Color const& InsideColor, Color const& OutlineColor) noexcept;
 		void DrawOutlinedFilledRect(Vector4 const& rect, float strokeWidth, Color const& OutlineColor, Color const& color) noexcept;
 		void DrawFilledRectGradient(Vector4 const& rect, Color color, float gradientIntensity = 1.f) noexcept;
 		void DrawOutlinedRect(Vector4 const& rect, float strokeWidth, Color const& OutlineColor) noexcept;
 		void DrawCircle(Vector2 pos, float radius, Color const& color) noexcept;
+		void DrawArrow(Vector2 target2D, float radius, Color color) noexcept;
 
 		template <int smoothness>
 		void DrawSmoothCircle(Vector2 pos, float radius, Color const& color) noexcept;
 
 		void Draw2DText() const noexcept;
 		void DrawString(const char* string, Vector2 pos, Color color, float scale) noexcept;
+		void DrawOutlinedString(const char* string, Vector2 pos, Color color, float scale) noexcept;
 		Vector2 MeasureString(const char* string, bool ignore_whitespace = true) const noexcept;
 
 		void Clear()
@@ -99,6 +103,8 @@ namespace MadRenderer
 		int AddTexture(const uint8_t* memory, std::size_t size) noexcept;
 
 		void DrawTexture(Vector2 pos, Color color, int texture_id, Vector2 scale = { 1.f, 1.f });
+		void DrawTexture(Vector2 pos, int texture_id, Color color = { 1, 1, 1, 1 }, Vector2 scale = { 1.f, 1.f });
+		Vector2 GetTextureSize(int texture_id) noexcept;
 
 		//Do not fucking call this, it is meant to be called by my renderer
 		void DrawTexture() noexcept;
@@ -151,6 +157,7 @@ namespace MadRenderer
 		explicit AudioManager(class DX11* pRenderer) : pRenderer(pRenderer) { }
 		bool InitializeAudioManager();
 		int AddSoundEffect(const wchar_t* wavFile);
+		int AddSoundEffect(const uint8_t* buffer, std::size_t size);
 		void PlaySoundEffect(int soundID, float volume = 1.f, float pitch = 0.f, float pan = 0.f);
 
 	public:
@@ -166,6 +173,7 @@ namespace MadRenderer
 		struct SoundData
 		{
 			std::unique_ptr<DirectX::SoundEffect> pSoundEffect = nullptr;
+			WAVEFORMATEX wavFormat{};
 			std::wstring wav_file;
 			void const* wavData = nullptr;
 			std::size_t audio_size = 0;

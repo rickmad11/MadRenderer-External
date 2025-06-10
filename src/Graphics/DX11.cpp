@@ -919,6 +919,61 @@ namespace MadRenderer
 		tmp.y = rect.y + rect.w;
 		DrawFilledRect(tmp, color);
 	}
+
+	void RenderList::DrawRect(Vector4 const& rect, Color const& InsideColor, Color const& OutlineColor) noexcept
+	{
+		const Vector2 topLeft(rect.x, rect.y);
+		const Vector2 topRight(rect.x + rect.z, rect.y);
+		const Vector2 bottomLeft(rect.x, rect.y + rect.w);
+		const Vector2 bottomRight(rect.x + rect.z, rect.y + rect.w);
+
+		DrawLine(topLeft, topRight, OutlineColor);                    // Top
+		DrawLine(bottomLeft, bottomRight, OutlineColor);              // Bottom 
+		DrawLine(topLeft, bottomLeft, OutlineColor);                  // Left 
+		DrawLine(topRight, bottomRight, OutlineColor);                // Right 
+
+		DrawLine({ topLeft.x + 1, topLeft.y + 1 }, { topRight.x - 1, topRight.y + 1 }, InsideColor);
+		DrawLine({ bottomLeft.x + 1, bottomLeft.y - 1 }, { bottomRight.x - 1, bottomRight.y - 1 }, InsideColor);
+		DrawLine({ topLeft.x + 1, topLeft.y + 1 }, { bottomLeft.x + 1, bottomLeft.y - 1 }, InsideColor);
+		DrawLine({ topRight.x - 1, topRight.y + 1 }, { bottomRight.x - 1, bottomRight.y - 1 }, InsideColor);
+
+		DrawLine({ topLeft.x + 2, topLeft.y + 2 }, { topRight.x - 2, topRight.y + 2 }, OutlineColor);
+		DrawLine({ bottomLeft.x + 2, bottomLeft.y - 2 }, { bottomRight.x - 2, bottomRight.y - 2 }, OutlineColor);
+		DrawLine({ topLeft.x + 2, topLeft.y + 2 }, { bottomLeft.x + 2, bottomLeft.y - 2 }, OutlineColor);
+		DrawLine({ topRight.x - 2, topRight.y + 2 }, { bottomRight.x - 2, bottomRight.y - 2 }, OutlineColor);
+	}
+
+	void RenderList::DrawRect(Vector4 const& rect, float strokeWidth, Color const& InsideColor, Color const& OutlineColor) noexcept
+	{
+		const Vector2 topLeft(rect.x, rect.y);
+		const Vector2 topRight(rect.x + rect.z, rect.y);
+		const Vector2 bottomLeft(rect.x, rect.y + rect.w);
+		const Vector2 bottomRight(rect.x + rect.z, rect.y + rect.w);
+
+		for (float i = 0; i < strokeWidth; i++)
+		{
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { topRight.x - i, topRight.y + i }, OutlineColor);
+			DrawLine({ bottomLeft.x + i, bottomLeft.y - i }, { bottomRight.x - i, bottomRight.y - i }, OutlineColor);
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { bottomLeft.x + i, bottomLeft.y - i }, OutlineColor);
+			DrawLine({ topRight.x - i, topRight.y + i }, { bottomRight.x - i, bottomRight.y - i }, OutlineColor);
+		}
+
+		for (float i = strokeWidth; i < 2 * strokeWidth; i++)
+		{
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { topRight.x - i, topRight.y + i }, InsideColor);
+			DrawLine({ bottomLeft.x + i, bottomLeft.y - i }, { bottomRight.x - i, bottomRight.y - i }, InsideColor);
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { bottomLeft.x + i, bottomLeft.y - i }, InsideColor);
+			DrawLine({ topRight.x - i, topRight.y + i }, { bottomRight.x - i, bottomRight.y - i }, InsideColor);
+		}
+
+		for (float i = 2 * strokeWidth; i < 3 * strokeWidth; i++)
+		{
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { topRight.x - i, topRight.y + i }, OutlineColor);
+			DrawLine({ bottomLeft.x + i, bottomLeft.y - i }, { bottomRight.x - i, bottomRight.y - i }, OutlineColor);
+			DrawLine({ topLeft.x + i, topLeft.y + i }, { bottomLeft.x + i, bottomLeft.y - i }, OutlineColor);
+			DrawLine({ topRight.x - i, topRight.y + i }, { bottomRight.x - i, bottomRight.y - i }, OutlineColor);
+		}
+	}
 	
 	void RenderList::DrawOutlinedFilledRect(Vector4 const& rect, float strokeWidth, Color const& OutlineColor, Color const& color) noexcept
 	{
@@ -989,6 +1044,43 @@ namespace MadRenderer
 	
 		pRenderer->AddVertices(this, _vertices, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
 	}
+
+	void RenderList::DrawArrow(Vector2 target2D, float radius, Color color) noexcept
+	{
+		const float windowCenterX = static_cast<float>(pRenderer->windowWidth) * 0.5f;
+		const float windowCenterY = static_cast<float>(pRenderer->windowHeight) * 0.5f;
+
+		const Vector2 screenCenter = { windowCenterX, windowCenterY };
+
+		const Vector2 delta = target2D - screenCenter;
+		const float angle = atan2f(delta.y, delta.x);
+
+		Vector2 tip =
+		{
+			windowCenterX + radius * cosf(angle),
+			windowCenterY + radius * sinf(angle)
+		};
+
+		constexpr float size = 12.0f;
+
+		constexpr float angleOffset = std::numbers::pi_v<float> / 6;
+
+		Vector2 left =
+		{
+			tip.x - size * cosf(angle - angleOffset),
+			tip.y - size * sinf(angle - angleOffset)
+		};
+
+		Vector2 right =
+		{
+			tip.x - size * cosf(angle + angleOffset),
+			tip.y - size * sinf(angle + angleOffset)
+		};
+
+		DrawLine(left, tip, color);
+		DrawLine(right, tip, color);
+		DrawLine(left, right, color);
+	}
 	
 	void RenderList::Draw2DText() const noexcept
 	{
@@ -1014,6 +1106,27 @@ namespace MadRenderer
 		static constexpr float normal_color_conversion = 1.f / 255.f;
 		color = Color{color.x * normal_color_conversion, color.y * normal_color_conversion, color.z * normal_color_conversion, color.w};
 	
+		text_buffer.emplace_back(string, pos);
+		text_data.emplace_back(color, scale);
+	}
+
+	void RenderList::DrawOutlinedString(const char* string, Vector2 pos, Color color, float scale) noexcept
+	{
+		static constexpr float normal_color_conversion = 1.f / 255.f;
+		color = Color{ color.x * normal_color_conversion, color.y * normal_color_conversion, color.z * normal_color_conversion, color.w };
+
+		text_buffer.emplace_back(string, pos + Vector2{ 1, 1 });
+		text_data.emplace_back(Color{ 0, 0, 0, 255 }, scale);
+
+		text_buffer.emplace_back(string, pos + Vector2{ -1, 1 });
+		text_data.emplace_back(Color{ 0, 0, 0, 255 }, scale);
+
+		text_buffer.emplace_back(string, pos + Vector2{ -1, -1 });
+		text_data.emplace_back(Color{ 0, 0, 0, 255 }, scale);
+
+		text_buffer.emplace_back(string, pos + Vector2{ 1, -1 });
+		text_data.emplace_back(Color{ 0, 0, 0, 255 }, scale);
+
 		text_buffer.emplace_back(string, pos);
 		text_data.emplace_back(color, scale);
 	}
@@ -1151,6 +1264,24 @@ namespace MadRenderer
 		if (textures.find(texture_id) != textures.end())
 			texture_draw_data.emplace_back(pos, scale, color, texture_id);
 	}
+
+	void TextureManager::DrawTexture(Vector2 pos, int texture_id, Color color, Vector2 scale)
+	{
+		DrawTexture(pos, color, texture_id, scale);
+	}
+
+	TextureManager::Vector2 TextureManager::GetTextureSize(int texture_id) noexcept
+	{
+		TextureData& texture_data = textures.at(texture_id);
+
+		Microsoft::WRL::ComPtr<ID3D11Texture2D> _texture;
+		texture_data.pTextureResource.As(&_texture);
+
+		CD3D11_TEXTURE2D_DESC _textureDesc;
+		_texture->GetDesc(&_textureDesc);
+
+		return { static_cast<float>(_textureDesc.Width) * 0.5f, static_cast<float>(_textureDesc.Height) * 0.5f };
+	}
 	
 	void TextureManager::DrawTexture() noexcept
 	{
@@ -1206,6 +1337,61 @@ namespace MadRenderer
 	
 		return sound_id;
 	}
+
+	int AudioManager::AddSoundEffect(const uint8_t* buffer, std::size_t size)
+	{
+		if (buffer == nullptr)
+		{
+			//MessageBoxW(nullptr, L"Error wavFile was nullptr \nint AudioManager::AddSoundEffect(const wchar_t* wavFile)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+			return -1;
+		}
+
+		if (internal_audio_id + 1 > MaxAudioCount)
+		{
+			//MessageBoxW(nullptr, L"Error max audio files reached \nint AudioManager::AddSoundEffect(const wchar_t* wavFile)", L"FATAL ERROR", MB_OKCANCEL | MB_ICONERROR);
+			return -1;
+		}
+
+		std::unique_ptr<uint8_t[]> wavData = std::make_unique_for_overwrite<uint8_t[]>(size + sizeof(WAVEFORMATEX));
+		std::memcpy(wavData.get(), buffer, size);
+
+#pragma pack(push, 1)
+		struct wav_header {
+			std::uint32_t ChunkID;
+			std::uint32_t ChunkSize;
+			std::uint32_t Format;
+			std::uint32_t Subchunk1ID;
+			std::uint32_t Subchunk1Size;
+			std::uint16_t AudioFormat;
+			std::uint16_t NumChannels;
+			std::uint32_t SampleRate;
+			std::uint32_t ByteRate;
+			std::uint16_t BlockAlign;
+			std::uint16_t BitsPerSample;
+			std::uint32_t Subchunk2ID;
+			std::uint32_t Subchunk2Size;
+			//Data
+		};
+#pragma pack(pop)
+
+		wav_header* p_wav_header = reinterpret_cast<wav_header*>(wavData.get());
+
+		SoundData sound_data{};
+		sound_data.wavFormat.cbSize = sizeof(WAVEFORMATEX);
+		sound_data.wavFormat.nBlockAlign = p_wav_header->BlockAlign;
+		sound_data.wavFormat.nChannels = p_wav_header->NumChannels;
+		sound_data.wavFormat.nSamplesPerSec = p_wav_header->SampleRate;
+		sound_data.wavFormat.wBitsPerSample = p_wav_header->BitsPerSample;
+		sound_data.wavFormat.wFormatTag = WAVE_FORMAT_PCM;
+		sound_data.wavFormat.nAvgBytesPerSec = p_wav_header->ByteRate;
+
+		sound_data.pSoundEffect = std::make_unique<DirectX::SoundEffect>(pAudioEngine.get(), wavData, &sound_data.wavFormat, wavData.get() + sizeof(wav_header), p_wav_header->ChunkSize);
+
+		int sound_id = internal_audio_id++;
+		sound_effects[sound_id] = std::move(sound_data);
+
+		return sound_id;
+	}
 	
 	void AudioManager::PlaySoundEffect(int soundID, float volume, float pitch, float pan)
 	{
@@ -1215,7 +1401,7 @@ namespace MadRenderer
 			return;
 		}
 	
-		if(soundID < sound_effects.size())
+		if(static_cast<size_t>(soundID) < sound_effects.size())
 			sound_effects[soundID].pSoundEffect->Play(volume, pitch, pan);
 	}
 }
