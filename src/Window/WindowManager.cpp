@@ -87,6 +87,12 @@ bool WindowManager::InitializeWindow(std::wstring_view window_name, int windowWi
 	return false;
 }
 
+void WindowManager::Exit() noexcept
+{
+	(void)UnregisterClassW(m_class_name.data(), m_current_module);
+	(void)DestroyWindow(m_window_handle);
+}
+
 HWND WindowManager::GetWindowHandle() const
 {
 	return IsWindowValid ? m_window_handle : nullptr;
@@ -131,12 +137,12 @@ void WindowManager::ChangeWindowSize(UINT new_width, UINT new_height) noexcept
 	MoveWindow(m_window_handle, window_rect.left, window_rect.top, new_width, new_height, false);
 }
 
-void WindowManager::FollowWindow(HWND window) const noexcept
+void WindowManager::FollowWindow(HWND window) noexcept
 {
 	if(window)
 	{
 		RECT window_rect{};
-		if (HasWindowMoved(window, window_rect))
+		if (HasWindowMoved(window, window_rect) && IsWindowValid)
 		{
 			UINT new_width = window_rect.right - window_rect.left;
 			UINT new_height = window_rect.bottom - window_rect.top;
@@ -150,9 +156,12 @@ void WindowManager::FollowWindow(HWND window) const noexcept
 			MoveWindow(m_window_handle, window_rect.left, window_rect.top, new_width, new_height, false);
 		}
 	}
+
+	if (!window_rect_updated)
+		UpdateWindowRectData();
 }
 
-bool WindowManager::HasWindowMoved(HWND window, RECT& r_window_rect) const noexcept
+bool WindowManager::HasWindowMoved(HWND window, RECT& r_window_rect) noexcept
 {
 	if(window)
 	{
@@ -169,8 +178,8 @@ void WindowManager::HideFromCapture(bool hide) const noexcept
 	SetWindowDisplayAffinity(m_window_handle, hide ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 }
 
-WindowManager::~WindowManager()
+void WindowManager::UpdateWindowRectData() noexcept
 {
-	(void)UnregisterClassW(m_class_name.data(), m_current_module);
-	(void)DestroyWindow(m_window_handle);
+	if (GetWindowRect(m_window_handle, &m_window_rect) != 0)
+		window_rect_updated = true;
 }

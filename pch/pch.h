@@ -14,6 +14,7 @@
 #include <future>
 #include <span>
 #include <numbers>
+#include <atomic>
 
 //DirectX11
 #include <d3d11.h>
