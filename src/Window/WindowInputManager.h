@@ -68,8 +68,8 @@ public:
 	static inline bool bCaptureMouse = false;
 
 private:
-	static inline bool bIsLButtonPressed = false;
-	static inline bool bIsRButtonPressed = false;
+	static inline std::atomic_bool bIsLButtonPressed = false;
+	static inline std::atomic_bool bIsRButtonPressed = false;
 
 private:
 	static inline POINTS sCurrentMousePosition{};

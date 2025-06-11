@@ -189,22 +189,22 @@ void WindowInputManager::OnMouseRButtonRelease() noexcept
 
 bool WindowInputManager::IsLButtonPressed() noexcept
 {
-	return bIsLButtonPressed;
+	return bIsLButtonPressed.load();
 }
 
 bool WindowInputManager::IsRButtonPressed() noexcept
 {
-	return bIsRButtonPressed;
+	return bIsRButtonPressed.load();
 }
 
 bool WindowInputManager::IsRButtonReleased() noexcept
 {
-	return !bIsRButtonPressed;
+	return !bIsRButtonPressed.load();
 }
 
 bool WindowInputManager::IsLButtonReleased() noexcept
 {
-	return !bIsRButtonPressed;
+	return !bIsRButtonPressed.load();
 }
 
 #pragma endregion MOUSE

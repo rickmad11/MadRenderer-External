@@ -49,7 +49,7 @@ bool WindowManager::InitializeWindow(std::wstring_view window_name, int windowWi
 
 		ATOM class_atom = RegisterClassExW(&wndclassexw);
 
-		DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT;
+		DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW;
 		DWORD dwStyleFlags = WS_POPUP;
 
 		RECT window_rect
@@ -161,6 +161,11 @@ void WindowManager::FollowWindow(HWND window) noexcept
 		UpdateWindowRectData();
 }
 
+void WindowManager::FollowTargetWindow() noexcept
+{
+	FollowWindow(m_target_window_handle);
+}
+
 bool WindowManager::HasWindowMoved(HWND window, RECT& r_window_rect) noexcept
 {
 	if(window)
@@ -201,6 +206,62 @@ void WindowManager::ReleaseInputLock(HWND target_window) noexcept
 		SetCapture(target_window);
 		SetActiveWindow(target_window);
 	}
+}
+
+void WindowManager::ReleaseInputLockOnTarget() noexcept
+{
+	ReleaseInputLock(m_target_window_handle);
+}
+
+HWND WindowManager::GetWindowHandleByProcessID(DWORD process_id) const noexcept
+{
+	struct WindowData
+	{
+		HWND target_handle = nullptr;
+		DWORD process_id = 0;
+	}target_window_data{ .target_handle = nullptr, .process_id = process_id };
+
+	(void)EnumWindows(+[](HWND current_window_handle, LPARAM lParam)-> BOOL
+		{
+			DWORD window_process_id = 0;
+			if (!GetWindowThreadProcessId(current_window_handle, &window_process_id))
+				return TRUE;
+
+			WindowData* p_window_data = reinterpret_cast<WindowData*>(lParam);
+
+			if (p_window_data->process_id == window_process_id)
+			{
+				p_window_data->target_handle = current_window_handle;
+				return FALSE;
+			}
+
+			return TRUE;
+
+		}, reinterpret_cast<LPARAM>(&target_window_data));
+
+	return target_window_data.target_handle;
+}
+
+void WindowManager::SetTarget(HWND target_window_handle) noexcept
+{
+	m_target_window_handle = target_window_handle;
+}
+
+std::wstring WindowManager::GenerateRandomWindowTitle() noexcept
+{
+	std::random_device random_device{};
+	std::mt19937 twister_engine{ random_device() };
+	std::uniform_int_distribution<int> uniform_int_distribution{ 0, 256 };
+
+	std::wstring random_title_name;
+
+	for (size_t i = 0; i < 64; i++)
+	{
+		random_title_name += static_cast<wchar_t>(uniform_int_distribution(twister_engine)
+			^ std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).time_since_epoch()).count());
+	}
+
+	return random_title_name;
 }
 
 void WindowManager::UpdateWindowRectData() noexcept

@@ -30,9 +30,14 @@ public:
 	void ChangeToFullscreenMode() const noexcept;
 	void ChangeWindowSize(UINT new_width, UINT new_height) noexcept;
 	void FollowWindow(HWND window) noexcept;
+	void FollowTargetWindow() noexcept;
 	void HideFromCapture(bool hide) const noexcept;
 	void InputLock() noexcept;
 	void ReleaseInputLock(HWND target_window = nullptr) noexcept;
+	void ReleaseInputLockOnTarget() noexcept;
+	HWND GetWindowHandleByProcessID(DWORD process_id) const noexcept;
+	void SetTarget(HWND target_window_handle) noexcept;
+	std::wstring GenerateRandomWindowTitle() noexcept;
 
 private:
 	void UpdateWindowRectData() noexcept;
@@ -54,6 +59,7 @@ private:
 	HMODULE m_current_module = nullptr;
 	HWND m_window_handle = nullptr;
 	std::wstring m_class_name {};
+	HWND m_target_window_handle = nullptr;
 
 private:
 	int m_window_width = 0;

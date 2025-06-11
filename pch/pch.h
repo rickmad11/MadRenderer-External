@@ -16,6 +16,8 @@
 #include <numbers>
 #include <atomic>
 #include <array>
+#include <random>
+#include <chrono>
 
 //DirectX11
 #include <d3d11.h>
