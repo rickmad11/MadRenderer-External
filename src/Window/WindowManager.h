@@ -32,7 +32,7 @@ public:
 	void FollowWindow(HWND window) noexcept;
 	void HideFromCapture(bool hide) const noexcept;
 	void InputLock() noexcept;
-	void ReleaseInputLock() noexcept;
+	void ReleaseInputLock(HWND target_window = nullptr) noexcept;
 
 private:
 	void UpdateWindowRectData() noexcept;

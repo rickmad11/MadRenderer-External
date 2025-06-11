@@ -182,12 +182,25 @@ void WindowManager::InputLock() noexcept
 {
 	DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
 	SetWindowLongPtrW(m_window_handle, GWL_EXSTYLE, dwExStyleFlags);
+
+	SetForegroundWindow(m_window_handle);
+	SetFocus(m_window_handle);
+	SetCapture(m_window_handle);
+	SetActiveWindow(m_window_handle);
 }
 
-void WindowManager::ReleaseInputLock() noexcept
+void WindowManager::ReleaseInputLock(HWND target_window) noexcept
 {
 	DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW;
 	SetWindowLongPtrW(m_window_handle, GWL_EXSTYLE, dwExStyleFlags);
+
+	if (target_window != nullptr)
+	{
+		SetForegroundWindow(target_window);
+		SetFocus(target_window);
+		SetCapture(target_window);
+		SetActiveWindow(target_window);
+	}
 }
 
 void WindowManager::UpdateWindowRectData() noexcept
