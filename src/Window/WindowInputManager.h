@@ -37,7 +37,8 @@ private:
 private:
 	static constexpr unsigned int uMaxBufferSize = 16u;
 
-	inline static std::bitset<255> vKeyCodesState {};
+	//inline static std::bitset<255> vKeyCodesState {};
+	inline static std::array<std::atomic_bool, 255> vKeyCodesState{};
 	inline static std::queue<wchar_t> qKeysPressed {};
 	//--------------------Keyboard Manager--------------------
 

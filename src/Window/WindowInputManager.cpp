@@ -10,7 +10,7 @@ bool WindowInputManager::IsKeyPressed(unsigned int vKeyCode) noexcept
 	if (vKeyCode > 255)
 		return false;
 
-	return vKeyCodesState[vKeyCode];
+	return vKeyCodesState[vKeyCode].load();
 }
 
 bool WindowInputManager::IsKeyHeld(unsigned int vKeyCode) noexcept
@@ -20,7 +20,7 @@ bool WindowInputManager::IsKeyHeld(unsigned int vKeyCode) noexcept
 	if (vKeyCode > 255)
 		return false;
 
-	if(vKeyCodesState[vKeyCode])
+	if(vKeyCodesState[vKeyCode].load())
 	{
 		++held_iteration;
 
@@ -39,7 +39,7 @@ void WindowInputManager::KeyPressed(unsigned int vKeyCode) noexcept
 	if (vKeyCode > 255)
 		return;
 
-	vKeyCodesState[vKeyCode] = true;
+	vKeyCodesState[vKeyCode].store(true);
 }
 
 void WindowInputManager::KeyReleased(unsigned int vKeyCode) noexcept
@@ -47,7 +47,7 @@ void WindowInputManager::KeyReleased(unsigned int vKeyCode) noexcept
 	if (vKeyCode > 255)
 		return;
 
-	vKeyCodesState[vKeyCode] = false;
+	vKeyCodesState[vKeyCode].store(false);
 }
 
 bool WindowInputManager::IsKeyReleased(unsigned int vKeyCode) noexcept
@@ -88,7 +88,8 @@ void WindowInputManager::FlushChars() noexcept
 
 void WindowInputManager::FlushKeys() noexcept
 {
-	vKeyCodesState.reset();
+	for (std::atomic_bool& atomic_bool_ref : vKeyCodesState)
+		atomic_bool_ref.store(false);
 }
 
 void WindowInputManager::FlushKeyboardInputState() noexcept

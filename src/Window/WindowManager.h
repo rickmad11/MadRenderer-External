@@ -30,9 +30,13 @@ public:
 	void ChangeToFullscreenMode() const noexcept;
 	void ChangeWindowSize(UINT new_width, UINT new_height) noexcept;
 	void FollowWindow(HWND window) noexcept;
-	bool HasWindowMoved(HWND window, RECT& r_window_rect) noexcept;
 	void HideFromCapture(bool hide) const noexcept;
+	void InputLock() noexcept;
+	void ReleaseInputLock() noexcept;
+
+private:
 	void UpdateWindowRectData() noexcept;
+	bool HasWindowMoved(HWND window, RECT& r_window_rect) noexcept;
 
 public:
 	using WindowMessageManager::WindowMessageLoop;

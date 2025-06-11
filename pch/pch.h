@@ -15,6 +15,7 @@
 #include <span>
 #include <numbers>
 #include <atomic>
+#include <array>
 
 //DirectX11
 #include <d3d11.h>

@@ -178,6 +178,18 @@ void WindowManager::HideFromCapture(bool hide) const noexcept
 	SetWindowDisplayAffinity(m_window_handle, hide ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE);
 }
 
+void WindowManager::InputLock() noexcept
+{
+	DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
+	SetWindowLongPtrW(m_window_handle, GWL_EXSTYLE, dwExStyleFlags);
+}
+
+void WindowManager::ReleaseInputLock() noexcept
+{
+	DWORD dwExStyleFlags = WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW;
+	SetWindowLongPtrW(m_window_handle, GWL_EXSTYLE, dwExStyleFlags);
+}
+
 void WindowManager::UpdateWindowRectData() noexcept
 {
 	if (GetWindowRect(m_window_handle, &m_window_rect) != 0)
