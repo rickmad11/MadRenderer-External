@@ -1081,6 +1081,18 @@ namespace MadRenderer
 		DrawLine(right, tip, color);
 		DrawLine(left, right, color);
 	}
+
+	void RenderList::DrawFilledTriangle(Vector2 top, Vector2 bottom_right, Vector2 bottom_left, Color const& color) noexcept
+	{
+		Vertex _vertices[3]
+		{
+			{ {top.x, top.y, 0.f}, color },
+			{ {bottom_left.x, bottom_left.y, 0.f}, color },
+			{ {bottom_right.x, bottom_right.y, 0.f}, color },
+		};
+
+		pRenderer->AddVertices(this, _vertices, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	}
 	
 	void RenderList::Draw2DText() const noexcept
 	{

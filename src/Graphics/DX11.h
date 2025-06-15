@@ -41,9 +41,13 @@ namespace MadRenderer
 		void DrawOutlinedRect(Vector4 const& rect, float strokeWidth, Color const& OutlineColor) noexcept;
 		void DrawCircle(Vector2 pos, float radius, Color const& color) noexcept;
 		void DrawArrow(Vector2 target2D, float radius, Color color) noexcept;
+		void DrawFilledTriangle(Vector2 top, Vector2 bottom_right, Vector2 bottom_left, Color const& color) noexcept;
 
 		template <int smoothness>
 		void DrawSmoothCircle(Vector2 pos, float radius, Color const& color) noexcept;
+
+		template <int smoothness>
+		void DrawSmoothFilledCircle(Vector2 pos, float radius, Color const& color) noexcept;
 
 		void Draw2DText() const noexcept;
 		void DrawString(const char* string, Vector2 pos, Color color, float scale) noexcept;
@@ -333,6 +337,36 @@ namespace MadRenderer
 		}
 
 		pRenderer->AddVertices(this, _vertices, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
+	}
+
+	template<int smoothness>
+	void RenderList::DrawSmoothFilledCircle(Vector2 pos, float radius, Color const& color) noexcept
+	{
+		constexpr int vertexCount = smoothness * 3;
+		Vertex _vertices[vertexCount];
+
+		constexpr float angleStep = DirectX::XM_2PI / smoothness;
+		const float cosStep = std::cos(angleStep);
+		const float sinStep = std::sin(angleStep);
+
+		float x0 = radius;
+		float y0 = 0.0f;
+
+		for (int i = 0; i < smoothness; ++i)
+		{
+			const float x1 = cosStep * x0 - sinStep * y0;
+			const float y1 = sinStep * x0 + cosStep * y0;
+
+			const int idx = i * 3;
+			_vertices[idx + 0] = Vertex{ {pos.x, pos.y, 0.f}, color };
+			_vertices[idx + 1] = Vertex{ {pos.x + x0, pos.y + y0, 0.f}, color };
+			_vertices[idx + 2] = Vertex{ {pos.x + x1, pos.y + y1, 0.f}, color };
+
+			x0 = x1;
+			y0 = y1;
+		}
+
+		pRenderer->AddVertices(this, _vertices, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	}
 
 }
