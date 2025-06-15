@@ -107,6 +107,10 @@ LRESULT WindowMessageManager::WindowProcWR(HWND hWnd, UINT Msg, WPARAM wParam, L
 			WindowInputManager::FlushKeyboardInputState();
 			break;
 
+		case WM_SETCURSOR:
+			SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+			break;
+
 		case WM_SIZE:
 			{
 				UINT width = LOWORD(lParam);

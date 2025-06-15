@@ -264,6 +264,12 @@ std::wstring WindowManager::GenerateRandomWindowTitle() noexcept
 	return random_title_name;
 }
 
+bool WindowManager::IsTargetAlive() noexcept
+{
+	RECT dummy{};
+	return GetWindowRect(m_target_window_handle, &dummy);
+}
+
 void WindowManager::UpdateWindowRectData() noexcept
 {
 	if (GetWindowRect(m_window_handle, &m_window_rect) != 0)

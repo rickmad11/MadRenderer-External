@@ -38,6 +38,7 @@ public:
 	HWND GetWindowHandleByProcessID(DWORD process_id) const noexcept;
 	void SetTarget(HWND target_window_handle) noexcept;
 	std::wstring GenerateRandomWindowTitle() noexcept;
+	bool IsTargetAlive() noexcept;
 
 private:
 	void UpdateWindowRectData() noexcept;
