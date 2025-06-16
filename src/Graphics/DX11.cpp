@@ -883,6 +883,14 @@ namespace MadRenderer
 	
 		pRenderer->AddVertices(this, _vertices, D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 	}
+
+	void RenderList::DrawLine(Vector2 from, Vector2 to, float thickness, Color const& color) noexcept
+	{
+		if (thickness != 1)
+			DrawFilledRect({ from.x, from.y, to.x - from.x, thickness }, color);
+		else
+			DrawLine(from, to, color);
+	}
 	
 	void RenderList::DrawDot(Vector2 pos, Color const& color) noexcept
 	{

@@ -31,6 +31,7 @@ namespace MadRenderer
 
 		void Draw() const noexcept;
 		void DrawLine(Vector2 from, Vector2 to, Color const& color) noexcept;
+		void DrawLine(Vector2 from, Vector2 to, float thickness, Color const& color) noexcept;
 		void DrawDot(Vector2 pos, Color const& color) noexcept;
 		void DrawFilledRect(Vector4 const& rect, Color const& color) noexcept;
 		void DrawRect(Vector4 const& rect, float strokeWidth, Color const& color) noexcept;
