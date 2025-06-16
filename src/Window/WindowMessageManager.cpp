@@ -111,6 +111,7 @@ LRESULT WindowMessageManager::WindowProcWR(HWND hWnd, UINT Msg, WPARAM wParam, L
 			SetCursor(LoadCursorW(nullptr, IDC_ARROW));
 			break;
 
+		case SIZE_MINIMIZED:
 		case WM_SIZE:
 			{
 				UINT width = LOWORD(lParam);
