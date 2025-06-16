@@ -151,6 +151,7 @@ void WindowManager::FollowWindow(HWND window) noexcept
 			{
 				LPARAM lparam = ((0xFFFF & new_width) | new_height << 16);
 				SendMessageW(m_window_handle, WM_SIZE, 0, lparam);
+				SetWindowSize(new_width, new_height);
 			}
 
 			MoveWindow(m_window_handle, window_rect.left, window_rect.top, new_width, new_height, false);
